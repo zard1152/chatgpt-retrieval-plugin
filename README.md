@@ -1,200 +1,204 @@
-# ChatGPT Retrieval Plugin
+# ChatGPT 检索插件
+> **在此处加入 [ChatGPT 插件等待名单](https://openai.com/waitlist/plugins)!**
+> 在此处找到一个检索插件的示例视频，该插件可以访问 2018 年至 2022 年的联合国年度报告 [视频链接](https://cdn.openai.com/chat-plugins/retrieval-gh-repo-readme/Retrieval-Final.mp4)。
 
-> **Join the [ChatGPT plugins waitlist here](https://openai.com/waitlist/plugins)!**
+## 简介
+ChatGPT 检索插件仓库提供了一种灵活的解决方案，用于使用自然语言查询进行个人或组织文档的语义搜索和检索。该仓库分为几个目录：
 
-Find an example video of a Retrieval Plugin that has access to the UN Annual Reports from 2018 to 2022 [here](https://cdn.openai.com/chat-plugins/retrieval-gh-repo-readme/Retrieval-Final.mp4).
+| 目录                         | 描述                                                                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [`datastore`](/datastore)    | 包含使用各种向量数据库提供商存储和查询文档嵌入的核心逻辑。                                                         |
+| [`docs`](/docs)              | 包括设置和使用每个向量数据库提供商、Webhook 和删除未使用的依赖项的文档。                                            |
+| [`examples`](/examples)       | 提供示例配置、认证方法和特定提供者的示例。                                   |
+| [`models`](/models)           | 包含插件使用的数据模型，如文档和元数据模型。                                         |
+| [`scripts`](/scripts)         | 提供用于处理和上传来自不同数据源的文档的脚本。                                         |
+| [`server`](/server)           | 包含主要的 FastAPI 服务器实现。                                                                             |
+| [`services`](/services)       | 包含用于任务如分块、元数据提取和 PII 检测的实用服务。                                 |
+| [`tests`](/tests)             | 包含针对各种向量数据库提供者的集成测试。                                                          |
+| [`.well-known`](/.well-known) | 存储插件清单文件和 OpenAPI 架构，这些定义了插件配置和 API 规范。           |
+| 
 
-## Introduction
 
-The ChatGPT Retrieval Plugin repository provides a flexible solution for semantic search and retrieval of personal or organizational documents using natural language queries. The repository is organized into several directories:
+这份 README 提供了关于如何设置、开发和部署 ChatGPT 检索插件的详细信息。
 
-| Directory                     | Description                                                                                                                |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| [`datastore`](/datastore)     | Contains the core logic for storing and querying document embeddings using various vector database providers.              |
-| [`docs`](/docs)               | Includes documentation for setting up and using each vector database provider, webhooks, and removing unused dependencies. |
-| [`examples`](/examples)       | Provides example configurations, authentication methods, and provider-specific examples.                                   |
-| [`models`](/models)           | Contains the data models used by the plugin, such as document and metadata models.                                         |
-| [`scripts`](/scripts)         | Offers scripts for processing and uploading documents from different data sources.                                         |
-| [`server`](/server)           | Houses the main FastAPI server implementation.                                                                             |
-| [`services`](/services)       | Contains utility services for tasks like chunking, metadata extraction, and PII detection.                                 |
-| [`tests`](/tests)             | Includes integration tests for various vector database providers.                                                          |
-| [`.well-known`](/.well-known) | Stores the plugin manifest file and OpenAPI schema, which define the plugin configuration and API specification.           |
+## 目录
+翻译问题, 索引可能跳转失败
 
-This README provides detailed information on how to set up, develop, and deploy the ChatGPT Retrieval Plugin.
-
-## Table of Contents
-
-- [Quickstart](#quickstart)
-- [About](#about)
-  - [Plugins](#plugins)
-  - [Retrieval Plugin](#retrieval-plugin)
-  - [Memory Feature](#memory-feature)
-  - [Security](#security)
-  - [API Endpoints](#api-endpoints)
-- [Development](#development)
-  - [Setup](#setup)
-    - [General Environment Variables](#general-environment-variables)
-  - [Choosing a Vector Database](#choosing-a-vector-database)
+- [快速入门](#quickstart)
+- [关于](#about)
+  - [插件](#plugins)
+  - [检索插件](#retrieval-plugin)
+  - [记忆功能](#memory-feature)
+  - [安全性](#security)
+  - [API 端点](#api-endpoints)
+- [开发](#development)
+  - [设置](#setup)
+    - [通用环境变量](#general-environment-variables)
+  - [选择向量数据库](#choosing-a-vector-database)
     - [Pinecone](#pinecone)
     - [Weaviate](#weaviate)
     - [Zilliz](#zilliz)
     - [Milvus](#milvus)
     - [Qdrant](#qdrant)
     - [Redis](#redis)
-  - [Running the API Locally](#running-the-api-locally)
-  - [Testing a Localhost Plugin in ChatGPT](#testing-a-localhost-plugin-in-chatgpt)
-  - [Personalization](#personalization)
-  - [Authentication Methods](#authentication-methods)
-- [Deployment](#deployment)
-- [Installing a Developer Plugin](#installing-a-developer-plugin)
+  - [在本地运行API](#running-the-api-locally)
+  - [在ChatGPT中测试本地主机插件](#testing-a-localhost-plugin-in-chatgpt)
+  - [个性化](#personalization)
+  - [认证方法](#authentication-methods)
+- [部署](#deployment)
+- [安装开发者插件](#installing-a-developer-plugin)
 - [Webhooks](#webhooks)
-- [Scripts](#scripts)
-- [Limitations](#limitations)
-- [Contributors](#contributors)
-- [Future Directions](#future-directions)
+- [脚本](#scripts)
+- [限制](#limitations)
+- [贡献者](#contributors)
+- [未来方向](#future-directions)
 
-## Quickstart
 
-Follow these steps to quickly set up and run the ChatGPT Retrieval Plugin:
+按照 README 中的 [在 ChatGPT 中测试本地插件](#testing-a-localhost-plugin-in-chatgpt) 部分的说明进行操作。
+有关设置、开发和部署 ChatGPT 检索插件的更详细信息，请参阅下面的完整开发部分。
 
-1. Install Python 3.10, if not already installed.
-2. Clone the repository: `git clone https://github.com/openai/chatgpt-retrieval-plugin.git`
-3. Navigate to the cloned repository directory: `cd /path/to/chatgpt-retrieval-plugin`
-4. Install poetry: `pip install poetry`
-5. Create a new virtual environment with Python 3.10: `poetry env use python3.10`
-6. Activate the virtual environment: `poetry shell`
-7. Install app dependencies: `poetry install`
-8. Create a [bearer token](#general-environment-variables)
-9. Set the required environment variables:
 
-   ```
-   export DATASTORE=<your_datastore>
-   export BEARER_TOKEN=<your_bearer_token>
-   export OPENAI_API_KEY=<your_openai_api_key>
+## 快速入门
+按照以下步骤快速设置并运行 ChatGPT 检索插件：
 
-   # Add the environment variables for your chosen vector DB.
-   # Some of these are optional; read the provider's setup docs in /docs/providers for more information.
+1. 如果尚未安装，安装 Python 3.10。
+2. 克隆仓库：`git clone https://github.com/openai/chatgpt-retrieval-plugin.git`
+3. 导航到克隆的仓库目录：`cd /path/to/chatgpt-retrieval-plugin`
+4. 安装 poetry：`pip install poetry`
+5. 使用 Python 3.10 创建一个新的虚拟环境：`poetry env use python3.10`
+6. 激活虚拟环境：`poetry shell`
+7. 安装应用依赖项：`poetry install`
+8. 创建一个 [bearer token](#general-environment-variables)
+9. 设置所需的环境变量：
+```
+export DATASTORE=<your_datastore>
+export BEARER_TOKEN=<your_bearer_token>
+export OPENAI_API_KEY=<your_openai_api_key>
 
-   # Pinecone
-   export PINECONE_API_KEY=<your_pinecone_api_key>
-   export PINECONE_ENVIRONMENT=<your_pinecone_environment>
-   export PINECONE_INDEX=<your_pinecone_index>
+# Add the environment variables for your chosen vector DB.
+# Some of these are optional; read the provider's setup docs in /docs/providers for more information.
 
-   # Weaviate
-   export WEAVIATE_HOST=<your_weaviate_instance_url>
-   export WEAVIATE_PORT=<your_weaviate_port_443_for_WCS>
-   export WEAVIATE_CLASS=<your_optional_weaviate_class>
-   export WEAVIATE_USERNAME=<your_weaviate_WCS_username>
-   export WEAVIATE_PASSWORD=<your_weaviate_WCS_password>
-   export WEAVIATE_SCOPES=<your_optional_weaviate_scopes>
-   export WEAVIATE_BATCH_SIZE=<optional_weaviate_batch_size>
-   export WEAVIATE_BATCH_DYNAMIC=<optional_weaviate_batch_dynamic>
-   export WEAVIATE_BATCH_TIMEOUT_RETRIES=<optional_weaviate_batch_timeout_retries>
-   export WEAVIATE_BATCH_NUM_WORKERS=<optional_weaviate_batch_num_workers>
+# Pinecone
+export PINECONE_API_KEY=<your_pinecone_api_key>
+export PINECONE_ENVIRONMENT=<your_pinecone_environment>
+export PINECONE_INDEX=<your_pinecone_index>
 
-   # Zilliz
-   export ZILLIZ_COLLECTION=<your_zilliz_collection>
-   export ZILLIZ_URI=<your_zilliz_uri>
-   export ZILLIZ_USER=<your_zilliz_username>
-   export ZILLIZ_PASSWORD=<your_zilliz_password>
+# Weaviate
+export WEAVIATE_HOST=<your_weaviate_instance_url>
+export WEAVIATE_PORT=<your_weaviate_port_443_for_WCS>
+export WEAVIATE_CLASS=<your_optional_weaviate_class>
+export WEAVIATE_USERNAME=<your_weaviate_WCS_username>
+export WEAVIATE_PASSWORD=<your_weaviate_WCS_password>
+export WEAVIATE_SCOPES=<your_optional_weaviate_scopes>
+export WEAVIATE_BATCH_SIZE=<optional_weaviate_batch_size>
+export WEAVIATE_BATCH_DYNAMIC=<optional_weaviate_batch_dynamic>
+export WEAVIATE_BATCH_TIMEOUT_RETRIES=<optional_weaviate_batch_timeout_retries>
+export WEAVIATE_BATCH_NUM_WORKERS=<optional_weaviate_batch_num_workers>
 
-   # Milvus
-   export MILVUS_COLLECTION=<your_milvus_collection>
-   export MILVUS_HOST=<your_milvus_host>
-   export MILVUS_PORT=<your_milvus_port>
-   export MILVUS_USER=<your_milvus_username>
-   export MILVUS_PASSWORD=<your_milvus_password>
+# Zilliz
+export ZILLIZ_COLLECTION=<your_zilliz_collection>
+export ZILLIZ_URI=<your_zilliz_uri>
+export ZILLIZ_USER=<your_zilliz_username>
+export ZILLIZ_PASSWORD=<your_zilliz_password>
 
-   # Qdrant
-   export QDRANT_URL=<your_qdrant_url>
-   export QDRANT_PORT=<your_qdrant_port>
-   export QDRANT_GRPC_PORT=<your_qdrant_grpc_port>
-   export QDRANT_API_KEY=<your_qdrant_api_key>
-   export QDRANT_COLLECTION=<your_qdrant_collection>
+# Milvus
+export MILVUS_COLLECTION=<your_milvus_collection>
+export MILVUS_HOST=<your_milvus_host>
+export MILVUS_PORT=<your_milvus_port>
+export MILVUS_USER=<your_milvus_username>
+export MILVUS_PASSWORD=<your_milvus_password>
 
-   # Redis
-   export REDIS_HOST=<your_redis_host>
-   export REDIS_PORT=<your_redis_port>
-   export REDIS_PASSWORD=<your_redis_password>
-   export REDIS_INDEX_NAME=<your_redis_index_name>
-   export REDIS_DOC_PREFIX=<your_redis_doc_prefix>
-   export REDIS_DISTANCE_METRIC=<your_redis_distance_metric>
-   export REDIS_INDEX_TYPE=<your_redis_index_type>
-   ```
+# Qdrant
+export QDRANT_URL=<your_qdrant_url>
+export QDRANT_PORT=<your_qdrant_port>
+export QDRANT_GRPC_PORT=<your_qdrant_grpc_port>
+export QDRANT_API_KEY=<your_qdrant_api_key>
+export QDRANT_COLLECTION=<your_qdrant_collection>
 
-10. Run the API locally: `poetry run start`
-11. Access the API documentation at `http://0.0.0.0:8000/docs` and test the API endpoints (make sure to add your bearer token).
+# Redis
+export REDIS_HOST=<your_redis_host>
+export REDIS_PORT=<your_redis_port>
+export REDIS_PASSWORD=<your_redis_password>
+export REDIS_INDEX_NAME=<your_redis_index_name>
+export REDIS_DOC_PREFIX=<your_redis_doc_prefix>
+export REDIS_DISTANCE_METRIC=<your_redis_distance_metric>
+export REDIS_INDEX_TYPE=<your_redis_index_typ
+```
+
+10.运行本地 API：`poetry run start`
+
+11.访问 API 文档：`http://0.0.0.0:8000/docs` 并测试 API 端点（确保添加你的令牌）。
 
 ### Testing in ChatGPT
 
-To test a locally hosted plugin in ChatGPT, follow these steps:
+1.在 localhost 上运行 API：`poetry run dev` 
 
-1. Run the API on localhost: `poetry run dev`
-2. Follow the instructions in the [Testing a Localhost Plugin in ChatGPT](#testing-a-localhost-plugin-in-chatgpt) section of the README.
+2.按照 README 中 [在 ChatGPT 中测试本地托管的插件](#testing-a-localhost-plugin-in-chatgpt) 部分的说明进行操作。
 
-For more detailed information on setting up, developing, and deploying the ChatGPT Retrieval Plugin, refer to the full Development section below.
+如需获得有关设置、开发和部署 ChatGPT 检索插件的更详细信息，请参阅下面的完整开发部分。
 
-## About
+## 关于
 
-### Plugins
+### 插件
 
-Plugins are chat extensions designed specifically for language models like ChatGPT, enabling them to access up-to-date information, run computations, or interact with third-party services in response to a user's request. They unlock a wide range of potential use cases and enhance the capabilities of language models.
+插件是专为像 ChatGPT 这样的语言模型设计的聊天扩展，使它们能够根据用户的请求访问最新信息、进行计算或与第三方服务进行交互。它们解锁了广泛的潜在用例，并增强了语言模型的能力。
 
-Developers can create a plugin by exposing an API through their website and providing a standardized manifest file that describes the API. ChatGPT consumes these files and allows the AI models to make calls to the API defined by the developer.
+开发者可以通过在他们的网站上公开一个 API 并提供描述该 API 的标准化清单文件来创建一个插件。ChatGPT 使用这些文件，并允许 AI 模型对开发者定义的 API 进行调用。
 
-A plugin consists of:
+一个插件包括：
 
-- An API
-- An API schema (OpenAPI JSON or YAML format)
-- A manifest (JSON file) that defines relevant metadata for the plugin
+- 一个 API
+- 一个 API 架构（OpenAPI JSON 或 YAML 格式）
+- 一个定义插件相关元数据的清单（JSON 文件）
 
-The Retrieval Plugin already contains all of these components. Read the Chat Plugins blogpost [here](https://openai.com/blog/chatgpt-plugins), and find the docs [here](https://platform.openai.com/docs/plugins/introduction).
+检索插件已经包含了所有这些组件。在[这里](https://openai.com/blog/chatgpt-plugins)阅读 Chat 插件的博客文章，并在[这里](https://platform.openai.com/docs/plugins/introduction)找到文档。
 
-### Retrieval Plugin
+### 检索插件
 
-This is a plugin for ChatGPT that enables semantic search and retrieval of personal or organizational documents. It allows users to obtain the most relevant document snippets from their data sources, such as files, notes, or emails, by asking questions or expressing needs in natural language. Enterprises can make their internal documents available to their employees through ChatGPT using this plugin.
+这是一个用于 ChatGPT 的插件，它可以进行个人或组织文档的语义搜索和检索。它允许用户通过以自然语言提问或表达需求，从他们的数据源（如文件、笔记或电子邮件）中获取最相关的文档片段。企业可以使用这个插件通过 ChatGPT 将他们的内部文档提供给他们的员工。
 
-The plugin uses OpenAI's `text-embedding-ada-002` embeddings model to generate embeddings of document chunks, and then stores and queries them using a vector database on the backend. As an open-source and self-hosted solution, developers can deploy their own Retrieval Plugin and register it with ChatGPT. The Retrieval Plugin supports several vector database providers, allowing developers to choose their preferred one from a list.
+该插件使用OpenAI的文本嵌入模型`text-embedding-ada-002`来生成文档块的嵌入，并使用后端的向量数据库进行存储和查询。作为一个开源的、自托管的解决方案，开发人员可以部署自己的检索插件并在ChatGPT上注册。检索插件支持多个向量数据库提供者，允许开发人员从列表中选择自己喜欢的向量数据库。
 
-A FastAPI server exposes the plugin's endpoints for upserting, querying, and deleting documents. Users can refine their search results by using metadata filters by source, date, author, or other criteria. The plugin can be hosted on any cloud platform that supports Docker containers, such as Fly.io, Heroku or Azure Container Apps. To keep the vector database updated with the latest documents, the plugin can process and store documents from various data sources continuously, using incoming webhooks to the upsert and delete endpoints. Tools like [Zapier](https://zapier.com) or [Make](https://www.make.com) can help configure the webhooks based on events or schedules.
+FastAPI服务器公开插件的端点以进行文档的插入、查询和删除。
+用户可以使用按来源、日期、作者或其他标准的元数据过滤器来细化其搜索结果。
+该插件可以托管在任何支持Docker容器的云平台上，如Fly.
+io、Heroku或Azure Container Apps。为了保持向量数据库与最新文档同步，插件可以持续处理并存储来自各种数据源的文档，使用传入的 Webhooks 对 upsert 和 delete 端点进行更新。像 [Zapier](https://zapier.com) 或 [Make](https://www.make.com) 等工具可以根据事件或计划配置 Webhooks。
 
-### Memory Feature
 
-A notable feature of the Retrieval Plugin is its capacity to provide ChatGPT with memory. By utilizing the plugin's upsert endpoint, ChatGPT can save snippets from the conversation to the vector database for later reference (only when prompted to do so by the user). This functionality contributes to a more context-aware chat experience by allowing ChatGPT to remember and retrieve information from previous conversations. Learn how to configure the Retrieval Plugin with memory [here](/examples/memory).
+### 记忆功能
+检索插件的一个显著特性是其为 ChatGPT 提供记忆的能力。通过利用插件的 upsert 端点，ChatGPT 可以将对话中的片段保存到向量数据库中以供后续参考（只有在用户提示时才这样做）。这个功能通过允许 ChatGPT 记住并检索来自先前对话的信息，为更具上下文感知的聊天体验做出了贡献。在[这里](/examples/memory)了解如何配置具有记忆功能的检索插件。
 
-### Security
 
-The Retrieval Plugin allows ChatGPT to search a vector database of content, and then add the best results into the ChatGPT session. This means it doesn’t have any external effects, and the main risk consideration is data authorization and privacy. Developers should only add content into their Retrieval Plugin that they have authorization for and that they are fine with appearing in users’ ChatGPT sessions. You can choose from a number of different authentication methods to secure the plugin (more information [here](#authentication-methods)).
+### 安全性
+检索插件允许 ChatGPT 搜索向量数据库的内容，然后将最佳结果添加到 ChatGPT 会话中。这意味着它没有任何外部效应，主要的风险考虑是数据授权和隐私。开发者只应将他们有授权的内容添加到他们的检索插件中，并且他们愿意让这些内容出现在用户的 ChatGPT 会话中。
 
-### API Endpoints
 
-The Retrieval Plugin is built using FastAPI, a web framework for building APIs with Python. FastAPI allows for easy development, validation, and documentation of API endpoints. Find the FastAPI documentation [here](https://fastapi.tiangolo.com/).
+ ### API Endpoints 
+检索插件使用FastAPI构建，这是一种用Python构建API的Web框架。FastAPI允许轻松开发、验证和文档化API终点。在此处找到FastAPI文档[here](https://fastapi.tiangolo.com/)。使用FastAPI的一个好处是自动生成交互式API文档与Swagger UI。当API在本地运行时，可以使用Swagger UI在`<local_host_url i.e. http://0.0.0.0:8000>/docs`与API终点进行交互，测试其功能，并查看预期的请求和响应模型。
 
-One of the benefits of using FastAPI is the automatic generation of interactive API documentation with Swagger UI. When the API is running locally, Swagger UI at `<local_host_url i.e. http://0.0.0.0:8000>/docs` can be used to interact with the API endpoints, test their functionality, and view the expected request and response models.
+插件为向量数据库提供以下端点，可进行文档插入、查询和删除。所有请求和响应均为JSON格式，并需要一个有效的令牌作为授权头。
+ - `/upsert`：此端点允许上传一个或多个文档，并将它们的文本和元数据存储在向量数据库中。文档被分成大约200个标记的块，每个块有一个唯一的ID。端点在请求体中期望文档列表，每个文档都有一个`text`字段和可选的`id`和`metadata`字段。`metadata`字段可以包含以下可选子字段：`source`，`source_id`，`url`，`created_at`和`author`。端点返回已插入文档的ID列表（如果未提供，则生成一个ID）。
+ - `/upsert-file`：此端点允许上传单个文件（PDF，TXT，DOCX，PPTX或MD），并将其文本和元数据存储在向量数据库中。该文件已转换为纯文本，并分成大约200个标记的块，每个块都有一个唯一的ID。该端点返回一个包含插入文件生成的ID的列表。
+- `/query`：这个端点允许使用一个或多个自然语言查询和可选的元数据过滤器查询向量数据库。端点期望在请求正文中使用查询列表，每个查询都有一个`query`和可选的`filter`和`top_k`字段。`filter`字段应包含以下子字段的子集：`source`，`source_id`，`document_id`，`url`，`created_at`和`author`。`top_k`字段指定要返回给定查询的结果数，默认值为3。该端点返回一个对象列表，每个对象包含给定查询的最相关文档块的列表，以及它们的文本、元数据和相似度分数。
+- `/delete`：这个端点允许使用它们的ID、元数据过滤器或delete_all标志从向量数据库中删除一个或多个文档。该终端点在请求正文中需要至少一个以下参数：`ids`、`filter`或`delete_all`。 `ids`参数应该是要删除的文档ID列表；这些IDS文档的所有文档块都将被删除。`filter`参数应该包含以下子字段的子集：`source`、`source_id`、`document_id`、`url`、`created_at`和`author`。`delete_all`参数应该是一个布尔值，表示是否从向量数据库中删除所有文档。终端点返回一个布尔值，表示删除是否成功。
 
-The plugin exposes the following endpoints for upserting, querying, and deleting documents from the vector database. All requests and responses are in JSON format, and require a valid bearer token as an authorization header.
 
-- `/upsert`: This endpoint allows uploading one or more documents and storing their text and metadata in the vector database. The documents are split into chunks of around 200 tokens, each with a unique ID. The endpoint expects a list of documents in the request body, each with a `text` field, and optional `id` and `metadata` fields. The `metadata` field can contain the following optional subfields: `source`, `source_id`, `url`, `created_at`, and `author`. The endpoint returns a list of the IDs of the inserted documents (an ID is generated if not initially provided).
+请求和响应模型的详细规格和示例可以通过在本地运行应用程序并导航到http://0.0.0.0:8000/openapi.json或在OpenAPI架构 [here]（/.well-known/openapi.yaml）中找到。请注意，OpenAPI架构仅包含`/query`终端点，因为这是ChatGPT需要访问的唯一功能。这样，ChatGPT 可以仅基于自然语言查询或需求来使用插件检索相关文档。但是，如果开发人员还想让 ChatGPT 能够记住一些东西以供以后使用，他们可以使用 `/upsert` 端点将对话片段保存到向量数据库中。可以在 [这里](/examples/memory) 找到一个提供 ChatGPT 访问 `/upsert` 端点的清单和 OpenAPI 模式的示例。
 
-- `/upsert-file`: This endpoint allows uploading a single file (PDF, TXT, DOCX, PPTX, or MD) and storing its text and metadata in the vector database. The file is converted to plain text and split into chunks of around 200 tokens, each with a unique ID. The endpoint returns a list containing the generated id of the inserted file.
+要包含自定义元数据字段，请编辑 `DocumentMetadata` 和 `DocumentMetadataFilter` 数据模型 [here](/models/models.py)，并更新 OpenAPI 模式 [here](/.well-known/openapi.yaml)。你可以通过在本地运行应用程序、复制 http://0.0.0.0:8000/sub/openapi.json 中找到的 JSON，并使用 [Swagger Editor](https://editor.swagger.io/) 将其转换为 YAML 格式来轻松更新它。或者，您可以将 `openapi.yaml` 文件替换为 `openapi.json` 文件。
 
-- `/query`: This endpoint allows querying the vector database using one or more natural language queries and optional metadata filters. The endpoint expects a list of queries in the request body, each with a `query` and optional `filter` and `top_k` fields. The `filter` field should contain a subset of the following subfields: `source`, `source_id`, `document_id`, `url`, `created_at`, and `author`. The `top_k` field specifies how many results to return for a given query, and the default value is 3. The endpoint returns a list of objects that each contain a list of the most relevant document chunks for the given query, along with their text, metadata and similarity scores.
 
-- `/delete`: This endpoint allows deleting one or more documents from the vector database using their IDs, a metadata filter, or a delete_all flag. The endpoint expects at least one of the following parameters in the request body: `ids`, `filter`, or `delete_all`. The `ids` parameter should be a list of document IDs to delete; all document chunks for the document with these IDS will be deleted. The `filter` parameter should contain a subset of the following subfields: `source`, `source_id`, `document_id`, `url`, `created_at`, and `author`. The `delete_all` parameter should be a boolean indicating whether to delete all documents from the vector database. The endpoint returns a boolean indicating whether the deletion was successful.
 
-The detailed specifications and examples of the request and response models can be found by running the app locally and navigating to http://0.0.0.0:8000/openapi.json, or in the OpenAPI schema [here](/.well-known/openapi.yaml). Note that the OpenAPI schema only contains the `/query` endpoint, because that is the only function that ChatGPT needs to access. This way, ChatGPT can use the plugin only to retrieve relevant documents based on natural language queries or needs. However, if developers want to also give ChatGPT the ability to remember things for later, they can use the `/upsert` endpoint to save snippets from the conversation to the vector database. An example of a manifest and OpenAPI schema that gives ChatGPT access to the `/upsert` endpoint can be found [here](/examples/memory).
 
-To include custom metadata fields, edit the `DocumentMetadata` and `DocumentMetadataFilter` data models [here](/models/models.py), and update the OpenAPI schema [here](/.well-known/openapi.yaml). You can update this easily by running the app locally, copying the JSON found at http://0.0.0.0:8000/sub/openapi.json, and converting it to YAML format with [Swagger Editor](https://editor.swagger.io/). Alternatively, you can replace the `openapi.yaml` file with an `openapi.json` file.
+## 开发
 
-## Development
+### 设置
 
-### Setup
+此应用使用Python 3.10和[poetry](https://python-poetry.org/)来管理依赖项。
 
-This app uses Python 3.10, and [poetry](https://python-poetry.org/) for dependency management.
+如果您的计算机尚未安装Python 3.10，请先安装。您可以从官方[Python网站](https://www.python.org/downloads/)下载，或者使用像`brew`或`apt`这样的软件包管理器，具体取决于您的系统。
 
-Install Python 3.10 on your machine if it isn't already installed. It can be downloaded from the official [Python website](https://www.python.org/downloads/) or with a package manager like `brew` or `apt`, depending on your system.
-
-Clone the repository from GitHub:
+从GitHub克隆存储库：
 
 ```
 git clone https://github.com/openai/chatgpt-retrieval-plugin.git
@@ -225,61 +229,58 @@ Install app dependencies using poetry:
 poetry install
 ```
 
-**Note:** If adding dependencies in the `pyproject.toml`, make sure to run `poetry lock` and `poetry install`.
+**注意：** 如果在`pyproject.toml`中添加依赖项，请确保运行`poetry lock`和`poetry install`。
 
-#### General Environment Variables
 
-The API requires the following environment variables to work:
+#### 一般环境变量
 
-| Name             | Required | Description                                                                                                                                                                                |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DATASTORE`      | Yes      | This specifies the vector database provider you want to use to store and query embeddings. You can choose from `pinecone`, `weaviate`, `zilliz`, `milvus`, `qdrant`, or `redis`.           |
-| `BEARER_TOKEN`   | Yes      | This is a secret token that you need to authenticate your requests to the API. You can generate one using any tool or method you prefer, such as [jwt.io](https://jwt.io/).                |
-| `OPENAI_API_KEY` | Yes      | This is your OpenAI API key that you need to generate embeddings using the `text-embedding-ada-002` model. You can get an API key by creating an account on [OpenAI](https://openai.com/). |
+API需要以下环境变量才能正常工作： 
 
-### Choosing a Vector Database
+| 名称             | 必填 | 描述                                                                                                                                                                                |
+| ---------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATASTORE`      | 是   | 这指定了您想要使用的向量数据库提供程序来存储和查询嵌入。您可以从`pinecone`、`weaviate`、`zilliz`、`milvus`、`qdrant`或`redis`中进行选择。        |
+| `BEARER_TOKEN`   | 是   | 这是一个秘密令牌，您需要使用它来对API进行身份验证。您可以使用任何工具或方法来生成一个，例如[jwt.io](https://jwt.io/)。  |
+| `OPENAI_API_KEY` | 是   | 这是您的OpenAI API密钥，您需要使用它来生成使用`text-embedding-ada-002`模型的嵌入。您可以通过在[OpenAI](https://openai.com/)上创建帐户来获取API密钥。 |
 
-The plugin supports several vector database providers, each with different features, performance, and pricing. Depending on which one you choose, you will need to use a different Dockerfile and set different environment variables. The following sections provide brief introductions to each vector database provider.
 
-For more detailed instructions on setting up and using each vector database provider, please refer to the respective documentation in the `/docs/providers/<datastore_name>/setup.md` file ([folders here](/docs/providers)).
+### 选择向量数据库
+
+该插件支持多个向量数据库提供程序，每个提供程序都具有不同的功能、性能和定价。根据您选择的提供程序，您将需要使用不同的Dockerfile并设置不同的环境变量。以下部分提供了对每个向量数据库提供程序的简要介绍。
+
+有关设置和使用每个向量数据库提供程序的更详细说明，请参阅`/docs/providers/<datastore_name>/setup.md`文件中的相应文档（[此处的文件夹](/docs/providers)）。
 
 #### Pinecone
 
-[Pinecone](https://www.pinecone.io) is a managed vector database designed for speed, scale, and rapid deployment to production. It supports hybrid search and is currently the only datastore to natively support SPLADE sparse vectors. For detailed setup instructions, refer to [`/docs/providers/pinecone/setup.md`](/docs/providers/pinecone/setup.md).
+[Pinecone](https://www.pinecone.io)是一个管理的向量数据库，旨在实现快速、可扩展和快速部署到生产环境。它支持混合搜索，并且目前是唯一本地支持SPLADE稀疏向量的数据存储。有关详细的设置说明，请参阅[`/docs/providers/pinecone/setup.md`](/docs/providers/pinecone/setup.md)。
 
 #### Weaviate
 
-[Weaviate](https://weaviate.io/) is an open-source vector search engine built to scale seamlessly into billions of data objects. It supports hybrid search out-of-the-box, making it suitable for users who require efficient keyword searches. Weaviate can be self-hosted or managed, offering flexibility in deployment. For detailed setup instructions, refer to [`/docs/providers/weaviate/setup.md`](/docs/providers/weaviate/setup.md).
+[Weaviate](https://weaviate.io/)是一个开源的向量搜索引擎，可无缝地扩展到数十亿个数据对象。它支持混合搜索，适用于需要高效关键字搜索的用户。Weaviate可以自主托管或托管，提供部署灵活性。有关详细的设置说明，请参阅[`/docs/providers/weaviate/setup.md`](/docs/providers/weaviate/setup.md)。
 
 #### Zilliz
 
-[Zilliz](https://zilliz.com) is a managed cloud-native vector database designed for billion-scale data. It offers a wide range of features, including multiple indexing algorithms, distance metrics, scalar filtering, time travel searches, rollback with snapshots, full RBAC, 99.9% uptime, separated storage and compute, and multi-language SDKs. For detailed setup instructions, refer to [`/docs/providers/zilliz/setup.md`](/docs/providers/zilliz/setup.md).
+[Zilliz](https://zilliz.com)是一个管理的云原生向量数据库，旨在处理十亿级数据。它提供多种功能，包括多个索引算法、距离度量、标量过滤、时间旅行搜索、带快照回滚、完整的RBAC、99.9%的正常运行时间、分离存储和计算以及多语言SDK。有关详细的设置说明，请参阅[`/docs/providers/zilliz/setup.md`](/docs/providers/zilliz/setup.md)。 
 
 #### Milvus
 
-[Milvus](https://milvus.io/) is an open-source, cloud-native vector database that scales to billions of vectors. It is the open-source version of Zilliz and shares many of its features, such as various indexing algorithms, distance metrics, scalar filtering, time travel searches, rollback with snapshots, multi-language SDKs, storage and compute separation, and cloud scalability. For detailed setup instructions, refer to [`/docs/providers/milvus/setup.md`](/docs/providers/milvus/setup.md).
+[Milvus](https://milvus.io/)是一个开源的云原生向量数据库，可扩展到数十亿个向量。它是Zilliz的开源版本，并共享许多其功能，例如各种索引算法、距离度量、标量过滤、时间旅行搜索、带快照回滚、多语言SDK、存储和计算分离以及云可扩展性。有关详细的设置说明，请参阅[`/docs/providers/milvus/setup.md`](/docs/providers/milvus/setup.md)。
 
 #### Qdrant
 
-[Qdrant](https://qdrant.tech/) is a vector database capable of storing documents and vector embeddings. It offers both self-hosted and managed [Qdrant Cloud](https://cloud.qdrant.io/) deployment options, providing flexibility for users with different requirements. For detailed setup instructions, refer to [`/docs/providers/qdrant/setup.md`](/docs/providers/qdrant/setup.md).
+[Qdrant](https://qdrant.tech/)是一个能够存储文档和向量嵌入的向量数据库。它提供了自主托管和托管的[Qdrant Cloud](https://cloud.qdrant.io/)部署选项，为具有不同需求的用户提供了灵活性。有关详细的设置说明，请参阅[`/docs/providers/qdrant/setup.md`](/docs/providers/qdrant/setup.md)。
 
 #### Redis
 
-[Redis](https://redis.com/solutions/use-cases/vector-database/) is a real-time data platform suitable for a variety of use cases, including everyday applications and AI/ML workloads. It can be used as a low-latency vector engine by creating a Redis database with the [Redis Stack docker container](/examples/docker/redis/docker-compose.yml). For a hosted/managed solution, [Redis Cloud](https://app.redislabs.com/#/) is available. For detailed setup instructions, refer to [`/docs/providers/redis/setup.md`](/docs/providers/redis/setup.md).
+[Redis](https://redis.com/solutions/use-cases/vector-database/)是一个实时数据平台，适用于各种用例，包括日常应用程序和AI/ML工作负载。通过使用[Redis Stack docker容器](/examples/docker/redis/docker-compose.yml)创建Redis数据库，它可以用作低延迟向量引擎。如果需要托管/托管的解决方案，可以使用[Redis Cloud](https://app.redislabs.com/#/)。有关详细的设置说明，请参阅[`/docs/providers/redis/setup.md`](/docs/providers/redis/setup.md)。
 
 #### LlamaIndex
 
-[LlamaIndex](https://github.com/jerryjliu/llama_index) is a central interface to connect your LLM's with external data.
-It provides a suite of in-memory indices over your unstructured and structured data for use with ChatGPT.
-Unlike standard vector databases, LlamaIndex supports a wide range of indexing strategies (e.g. tree, keyword table, knowledge graph) optimized for different use-cases.
-It is light-weight, easy-to-use, and requires no additional deployment.
-All you need to do is specifying a few environment variables (optionally point to an existing saved Index json file).
-Note that metadata filters in queries are not yet supported.
-For detailed setup instructions, refer to [`/docs/providers/llama/setup.md`](/docs/providers/llama/setup.md).
+[LlamaIndex](https://github.com/jerryjliu/llama_index)是一个中心接口，可将您的LLM与外部数据连接起来。它为ChatGPT提供了一套在内存中对您的非结构化和结构化数据进行索引的工具。与标准的向量数据库不同，LlamaIndex支持广泛的索引策略（例如树形、关键词表、知识图），针对不同的用例进行了优化。它轻巧、易于使用，不需要额外的部署。您只需要指定一些环境变量（可选地指向现有的已保存索引json文件）即可。请注意，查询中的元数据过滤器尚未得到支持。有关详细的设置说明，请参阅[`/docs/providers/llama/setup.md`](/docs/providers/llama/setup.md)。
 
-### Running the API locally
 
-To run the API locally, you first need to set the requisite environment variables with the `export` command:
+### 在本地运行API
+
+要在本地运行API，您首先需要使用`export`命令设置必需的环境变量： 
 
 ```
 export DATASTORE=<your_datastore>
@@ -294,152 +295,151 @@ Start the API with:
 poetry run start
 ```
 
-Append `docs` to the URL shown in the terminal and open it in a browser to access the API documentation and try out the endpoints (i.e. http://0.0.0.0:8000/docs). Make sure to enter your bearer token and test the API endpoints.
+将`docs`附加到终端中显示的URL中，并在浏览器中打开它以访问API文档并尝试端点（即http://0.0.0.0:8000/docs）。确保输入您的bearer令牌并测试API端点。
 
-**Note:** If you add new dependencies to the pyproject.toml file, you need to run `poetry lock` and `poetry install` to update the lock file and install the new dependencies.
+**注意：**如果您将新依赖项添加到pyproject.toml文件中，则需要运行`poetry lock`和`poetry install`来更新锁文件并安装新依赖项。
 
-### Testing a Localhost Plugin in ChatGPT
+### 在ChatGPT中测试本地主机插件
 
-To test a localhost plugin in ChatGPT, use the provided [`local-server/main.py`](/local-server/main.py) file, which is specifically configured for localhost testing with CORS settings, no authentication and routes for the manifest, OpenAPI schema and logo.
+要在ChatGPT中测试本地主机插件，请使用提供的[`local-server/main.py`](/local-server/main.py)文件，该文件专门配置为具有CORS设置、无身份验证和清单、OpenAPI模式和徽标路由的本地主机测试。
 
-Follow these steps to test your localhost plugin:
+按照以下步骤测试您的本地主机插件：
 
-1. Run the localhost server using the `poetry run dev` command. This starts the server at the default address (e.g. `localhost:3333`).
+1.使用`poetry run dev`命令运行本地主机服务器。这将在默认地址（例如`localhost:3333`）启动服务器。
 
-2. Visit [ChatGPT](https://chat.openai.com/), select "Plugins" from the model picker, click on the plugins picker, and click on "Plugin store" at the bottom of the list.
+2.访问[ChatGPT](https://chat.openai.com/)，从模型选择器中选择“插件”，单击插件选择器，然后单击列表底部的“插件商店”。
 
-3. Choose "Develop your own plugin" and enter your localhost URL (e.g. `localhost:3333`) when prompted.
+3.选择“开发您自己的插件”，并在提示时输入您的本地主机URL（例如`localhost:3333`）。
 
-4. Your localhost plugin is now enabled for your ChatGPT session.
+4.您的本地主机插件现已启用，用于您的ChatGPT会话。
 
-For more information, refer to the [OpenAI documentation](https://platform.openai.com/docs/plugins/getting-started/openapi-definition).
+有关更多信息，请参阅[OpenAI文档](https://platform.openai.com/docs/plugins/getting-started/openapi-definition)。
 
-### Personalization
+### 个性化
 
-You can personalize the Retrieval Plugin for your own use case by doing the following:
+您可以通过执行以下操作为自己的用例个性化检索插件：
 
-- **Replace the logo**: Replace the image in [logo.png](/.well-known/logo.png) with your own logo.
+- **更换徽标**：将[logo.png](/.well-known/logo.png)中的图像替换为您自己的徽标。
 
-- **Edit the data models**: Edit the `DocumentMetadata` and `DocumentMetadataFilter` data models in [models.py](/models/models.py) to add custom metadata fields. Update the OpenAPI schema in [openapi.yaml](/.well-known/openapi.yaml) accordingly. To update the OpenAPI schema more easily, you can run the app locally, then navigate to `http://0.0.0.0:8000/sub/openapi.json` and copy the contents of the webpage. Then go to [Swagger Editor](https://editor.swagger.io/) and paste in the JSON to convert it to a YAML format. You could also replace the [openapi.yaml](/.well-known/openapi.yaml) file with an openapi.json file in the [.well-known](/.well-known) folder.
+- **编辑数据模型**：编辑[models.py](/models/models.py)中的`DocumentMetadata`和`DocumentMetadataFilter`数据模型，以添加自定义元数据字段。相应更新[openapi.yaml](/.well-known/openapi.yaml)中的OpenAPI模式。为了更轻松地更新OpenAPI模式，您可以在本地运行应用程序，然后导航到`http://0.0.0.0:8000/sub/openapi.json`并复制网页的内容。然后转到[Swagger Editor](https://editor.swagger.io/)并粘贴JSON以将其转换为YAML格式。您还可以将[openapi.yaml](/.well-known/openapi.yaml)文件替换为[.well-known](/.well-known)文件夹中的openapi.json文件。
 
-- **Change the plugin name, description, and usage instructions**: Update the plugin name, user-facing description, and usage instructions for the model. You can either edit the descriptions in the [main.py](/server/main.py) file or update the [openapi.yaml](/.well-known/openapi.yaml) file. Follow the same instructions as in the previous step to update the OpenAPI schema.
+- **更改插件名称、描述和使用说明**：更新模型的插件名称、用户面向的描述和使用说明。您可以在[main.py](/server/main.py)文件中编辑描述，也可以更新[openapi.yaml](/.well-known/openapi.yaml)文件。按照上一步中的相同说明更新OpenAPI模式。
 
-- **Enable ChatGPT to save information from conversations**: See the instructions in the [memory example folder](/examples/memory).
 
-### Authentication Methods
+- **启用 ChatGPT 以保存对话中的信息**: 请参照这个说明 [memory example folder](/examples/memory).
 
-You can choose from four options for authenticating requests to your plugin:
+### 身份验证方法
 
-1. **No Authentication**: Anyone can add your plugin and use its API without any credentials. This option is suitable if you are only exposing documents that are not sensitive or already public. It provides no security for your data. If using this method, copy the contents of this [main.py](/examples/authentication-methods/no-auth/main.py) into the [actual main.py file](/server/main.py). Example manifest [here](/examples/authentication-methods/no-auth/ai-plugin.json).
+您可以从以下四个选项中选择身份验证插件请求的方法：
 
-2. **HTTP Bearer**: You can use a secret token as a header to authorize requests to your plugin. There are two variants of this option:
+1. **无验证**：任何人都可以添加您的插件并在没有任何凭据的情况下使用其 API。如果您只公开不敏感或已公开的文档，则此选项很合适。它不提供您数据的安全性。如果使用此方法，请将 [main.py](/examples/authentication-methods/no-auth/main.py) 的内容复制到 [实际的 main.py 文件](/server/main.py) 中。示例清单[在此处](/examples/authentication-methods/no-auth/ai-plugin.json)。
 
-   - **User Level** (default for this implementation): Each user who adds your plugin to ChatGPT must provide the bearer token when adding the plugin. You can generate and distribute these tokens using any tool or method you prefer, such as [jwt.io](https://jwt.io/). This method provides better security as each user has to enter the shared access token. If you require a unique access token for each user, you will need to implement this yourself in the [main.py](/server/main.py) file. Example manifest [here](/examples/authentication-methods/user-http/ai-plugin.json).
+2. **HTTP Bearer**：您可以使用一个密钥令牌作为标头来授权对插件的请求。有两种变体的选项：
 
-   - **Service Level**: Anyone can add your plugin and use its API without credentials, but you must add a bearer token when registering the plugin. When you install your plugin, you need to add your bearer token, and will then receive a token from ChatGPT that you must include in your hosted manifest file. Your token will be used by ChatGPT to authorize requests to your plugin on behalf of all users who add it. This method is more convenient for users, but it may be less secure as all users share the same token and do not need to add a token to install the plugin. Example manifest [here](/examples/authentication-methods/service-http/ai-plugin.json).
+  - **用户级别**（此实现的默认级别）：每个将您的插件添加到ChatGPT的用户在添加插件时必须提供令牌。您可以使用任何您喜欢的工具或方法（例如[jwt.io](https://jwt.io/)）生成和分发这些令牌。此方法提供更好的安全性，因为每个用户都必须输入共享访问令牌。如果您需要为每个用户提供唯一的访问令牌，则需要在[main.py](/server/main.py)文件中自行实现。示例清单[在此处](/examples/authentication-methods/user-http/ai-plugin.json)。
 
-3. **OAuth**: Users must go through an OAuth flow to add your plugin. You can use an OAuth provider to authenticate users who add your plugin and grant them access to your API. This method offers the highest level of security and control, as users authenticate through a trusted third-party provider. However, you will need to implement the OAuth flow yourself in the [main.py](/server/main.py) file and provide the necessary parameters in your manifest file. Example manifest [here](/examples/authentication-methods/oauth/ai-plugin.json).
+  - **服务级别**：任何人都可以添加您的插件并使用其API，而无需凭据，但您必须在注册插件时添加访问令牌。安装插件时，您需要添加您的访问令牌，然后将从ChatGPT接收一个令牌，您必须将其包含在托管的清单文件中。ChatGPT将使用您的令牌代表所有添加它的用户授权访问您的插件。此方法对用户更方便，但安全性可能较低，因为所有用户共享同一令牌，并且不需要添加令牌来安装插件。示例清单[在此处](/examples/authentication-methods/service-http/ai-plugin.json)。
 
-Consider the benefits and drawbacks of each authentication method before choosing the one that best suits your use case and security requirements. If you choose to use a method different to the default (User Level HTTP), make sure to update the manifest file [here](/.well-known/ai-plugin.json).
 
-## Deployment
+3. **OAuth**：用户必须通过OAuth流程才能添加您的插件。您可以使用OAuth提供程序对添加您的插件的用户进行身份验证，并授予他们访问您的API的权限。此方法提供了最高级别的安全性和控制，因为用户通过受信任的第三方提供程序进行身份验证。但是，您需要在[main.py](/server/main.py)文件中自己实现OAuth流程，并在清单文件中提供必要的参数。示例清单[在此处](/examples/authentication-methods/oauth/ai-plugin.json)。
 
-You can deploy your app to different cloud providers, depending on your preferences and requirements. However, regardless of the provider you choose, you will need to update two files in your app: [openapi.yaml](/.well-known/openapi.yaml) and [ai-plugin.json](/.well-known/ai-plugin.json). As outlined above, these files define the API specification and the AI plugin configuration for your app, respectively. You need to change the url field in both files to match the address of your deployed app.
+在选择最适合您的用例和安全要求的身份验证方法之前，请考虑每种身份验证方法的优缺点。如果您选择使用不同于默认值（用户级别HTTP）的方法，请确保更新清单文件[在此处](/.well-known/ai-plugin.json)。
 
-Before deploying your app, you might want to remove unused dependencies from your [pyproject.toml](/pyproject.toml) file to reduce the size of your app and improve its performance. Depending on the vector database provider you choose, you can remove the packages that are not needed for your specific provider. Refer to the respective documentation in the [`/docs/deployment/removing-unused-dependencies.md`](/docs/deployment/removing-unused-dependencies.md) file for information on removing unused dependencies for each provider.
 
-Once you have deployed your app, consider uploading an initial batch of documents using one of [these scripts](/scripts) or by calling the `/upsert` endpoint.
 
-Here are detailed deployment instructions for various platforms:
 
-- [Deploying to Fly.io](/docs/deployment/flyio.md)
-- [Deploying to Heroku](/docs/deployment/heroku.md)
-- [Other Deployment Options](/docs/deployment/other-options.md) (Azure Container Apps, Google Cloud Run, AWS Elastic Container Service, etc.)
 
-After you create your app, make sure to change the plugin url in your plugin manifest file [here](/.well-known/ai-plugin.json), and in your OpenAPI schema [here](/.well-known/openapi.yaml), and redeploy.
 
-## Installing a Developer Plugin
 
-To install a developer plugin, follow the steps below:
+## 部署
+您可以将应用程序部署到不同的云提供商，具体取决于您的偏好和要求。但是，无论您选择哪个提供商，您都需要更新应用程序中的两个文件：[openapi.yaml]（/.well-known/openapi.yaml）和[ai-plugin.json]（/.well-known/ai-plugin.json）。如上所述，这些文件分别定义了 API 规范和您的应用程序的 AI 插件配置。您需要在两个文件中更改 url 字段，以匹配您部署的应用程序的地址。在部署应用程序之前，您可能需要从 [pyproject.toml]（/pyproject.toml）文件中删除未使用的依赖项，以减小应用程序的大小并提高其性能。根据您选择的向量数据库提供商，可以删除不需要针对您特定提供商的软件包。
 
-- First, create your developer plugin by deploying it to your preferred hosting platform (e.g. Fly.io, Heroku, etc.) and updating the plugin URL in the manifest file and OpenAPI schema.
+请参考[`/docs/deployment/removing-unused-dependencies.md`]文件的各自文档，了解每个提供程序的删除未使用依赖关系的信息。一旦您部署了您的应用程序，考虑使用其中一个[这些脚本](/scripts)或通过调用`/upsert`端点上传初始批文档。以下是各种平台的详细部署说明：
+- [部署到Fly.io](/docs/deployment/flyio.md)
+- [部署到Heroku](/docs/deployment/heroku.md)
+- [其他部署选项](/docs/deployment/other-options.md)（Azure容器应用程序、Google Cloud Run、AWS Elastic Container Service等）。
 
-- Go to [ChatGPT](https://chat.openai.com/) and select "Plugins" from the model picker.
+创建应用程序后，请确保更改插件清单文件中的插件URL[在这里]（/.well-known/ai-plugin.json），并在您的OpenAPI模式文件[在此处]（/.well-known/openapi.yaml）中重新部署。
 
-- From the plugins picker, scroll to the bottom and click on "Plugin store."
 
-- Go to "Develop your own plugin" and follow the instructions provided. You will need to enter the domain where your plugin is deployed.
+## 安装开发插件 
+要安装开发插件，请按照以下步骤进行：
+- 首先，在您的首选托管平台（例如 Fly.
+io、Heroku 等）上部署开发插件，并在清单文件和 OpenAPI 模式中更新插件 URL。
+- 转到 [ChatGPT](https://chat.openai.com/)，从模型选择器中选择 “插件”。
+- 在插件选择器中，向下滚动到底部，然后单击 “插件商店”。
+- 转到 “开发自己的插件”，并按照提供的说明进行操作。
+您需要输入插件部署的域。
+- 根据您为插件选择的身份验证类型遵循说明（例如，如果您的插件使用 ervice Level HTTP，则必须粘贴您的访问令牌，然后将插件流程中收到的新访问令牌复制并粘贴到您的 [ai-plugin.json](/.well-known/ai-plugin.json) 文件中，并重新部署应用程序）。
+- 接下来，您必须添加您的插件。再次转到 “插件商店”，然后单击 “安装未验证的插件”。
+- 请按照提供的说明进行操作，这将要求您输入部署插件的域名。
+- 根据您为插件选择的身份验证类型，按照说明进行操作（例如，如果您的插件使用用户级HTTP，您将需要粘贴您的Bearer令牌）。
 
-- Follow the instructions based on the authentication type you have chosen for your plugin (e.g. if your plugin uses Service Level HTTP, you will have to paste in your access token, then paste the new access token you receive from the plugin flow into your [ai-plugin.json](/.well-known/ai-plugin.json) file and redeploy your app).
 
-- Next, you must add your plugin. Go to the "Plugin store" again and click on "Install an unverified plugin."
+完成这些步骤后，您的开发者插件应该已经安装好并可以在ChatGPT中使用。
 
-- Follow the instructions provided, which will require you to enter the domain where your plugin is deployed.
 
-- Follow the instructions based on the authentication type you have chosen for your plugin (e.g. if your plugin uses User Level HTTP, you will have to paste in your bearer token).
+## Webhooks 
+为了保持向量数据库中存储的文档最新，考虑使用像[Zapier](https://zapier.com)或[Make](https://www.make.com)这样的工具，根据事件或时间表配置入站Webhooks到您的插件API。例如，这可以允许您在更新笔记或接收电子邮件时同步新信息。您还可以使用[Zapier转移](https://zapier.com/blog/zapier-transfer-guide/)来批量处理一组现有文档并将它们上传到向量数据库。
 
-After completing these steps, your developer plugin should be installed and ready to use in ChatGPT.
+如果您需要从这些工具中传递自定义字段到您的插件中，您可能需要创建一个额外的检索插件API端点，调用数据存储的插入/更新功能，例如`upsert-email`。
+此自定义端点可以被设计为从Webhook中接受特定的字段并相应地处理它们。
+要设置一个传入的Webhook，请按照以下一般步骤：-选择一个Webhook工具，如Zapier或Make，并创建一个账户。
+- 设置一个新的Webhook或将它转移到工具中，并根据事件或计划配置它以触发。
+- 指定Webhook的目标URL，该URL应该是您检索插件的API端点（例如`https://your-plugin-url.com/upsert`）。
+- 根据检索插件的API要求配置Webhook有效负载以包括必要的数据字段并将其格式化。
+- 测试Webhook以确保它正常工作并按预期将数据发送到您的检索插件。
 
-## Webhooks
+设置 Webhook 后，您可能需要运行回溯以确保向量数据库中包括任何先前漏掉的数据。请记住，如果要使用传入的 Webhook 连续同步数据，应在设置后考虑运行补充以避免遗漏任何数据。除使用 Zapier 和 Make 等工具外，您还可以构建自己的自定义集成来将数据与检索插件同步。这使您可以更好地控制数据流并根据自己的特定需求和要求来定制集成。
 
-To keep the documents stored in the vector database up-to-date, consider using tools like [Zapier](https://zapier.com) or [Make](https://www.make.com) to configure incoming webhooks to your plugin's API based on events or schedules. For example, this could allow you to sync new information as you update your notes or receive emails. You can also use a [Zapier Transfer](https://zapier.com/blog/zapier-transfer-guide/) to batch process a collection of existing documents and upload them to the vector database.
 
-If you need to pass custom fields from these tools to your plugin, you might want to create an additional Retrieval Plugin API endpoint that calls the datastore's upsert function, such as `upsert-email`. This custom endpoint can be designed to accept specific fields from the webhook and process them accordingly.
 
-To set up an incoming webhook, follow these general steps:
+## 脚本
+`scripts` 文件夹包含用于批量插入或处理来自不同数据源（如 zip 文件、JSON 文件或 JSONL 文件）的文本文档的脚本。这些脚本使用插件的 upsert 工具函数将文档及其元数据上传到向量数据库，将它们转换为纯文本并将其拆分成块。每个脚本文件夹都有一个 README 文件，说明如何使用它以及需要哪些参数。您还可以使用语言模型可选地筛选包含个人身份信息（PII）的文档，并在检测到时跳过它们，使用 [`services.pii_detection`](/services/pii_detection.py) 模块即可。这样做有助于避免无意上传敏感或私人文档到向量数据库中。此外，您还可以使用语言模型可选地从文档文本中提取元数据，使用 [`services.extract_metadata`](/services/extract_metadata.py) 模块即可。如果您想丰富文档的元数据，则此工具非常有用。**注意：**如果使用传入的 WebHooks 连续同步数据，请在设置后运行回填来避免丢失任何数据。脚本为：
+- [`process_json`](scripts/process_json/)：此脚本处理 JSON 格式的文件转储中的文档，并将其存储到向量数据库中，同时添加一些元数据。JSON 文件的格式应该是一个包含多个 JSON 对象的列表，其中每个对象代表一个文档。JSON对象应该有一个`text`字段，还可以选填其他字段来填充元数据。您可以提供自定义元数据作为JSON字符串和标志来筛选PII并提取元数据。
 
-- Choose a webhook tool like Zapier or Make and create an account.
-- Set up a new webhook or transfer in the tool, and configure it to trigger based on events or schedules.
-- Specify the target URL for the webhook, which should be the API endpoint of your retrieval plugin (e.g. `https://your-plugin-url.com/upsert`).
-- Configure the webhook payload to include the necessary data fields and format them according to your retrieval plugin's API requirements.
-- Test the webhook to ensure it's working correctly and sending data to your retrieval plugin as expected.
+- [`process_jsonl`](scripts/process_jsonl/):此脚本处理JSONL格式的文档文件转储，并存储它们具有一些元数据的向量数据库中。 JSONL文件的格式应该是一个以换行符分隔的JSON文件，其中每行都是一个有效的JSON对象，表示一个文档。 JSON对象应该有一个`text`字段，还可以选填其他字段来填充元数据。您可以提供自定义元数据作为JSON字符串和标志来筛选PII并提取元数据。
 
-After setting up the webhook, you may want to run a backfill to ensure that any previously missed data is included in the vector database.
 
-Remember that if you want to use incoming webhooks to continuously sync data, you should consider running a backfill after setting these up to avoid missing any data.
+- [`process_zip`](scripts/process_zip/):此脚本处理zip文件中的文档文件转储，并存储它们具有一些元数据的向量数据库中。 zip文件的格式应该是docx，pdf，txt，md，pptx或csv文件的扁平zip文件夹。您可以提供自定义元数据作为JSON字符串和标志，以屏蔽PII并提取元数据。
 
-In addition to using tools like Zapier and Make, you can also build your own custom integrations to sync data with your Retrieval Plugin. This allows you to have more control over the data flow and tailor the integration to your specific needs and requirements.
+## 限制
+虽然ChatGPT检索插件旨在提供一种灵活的语义搜索和检索解决方案，但它确实有一些限制： 
+- **关键字搜索限制**：由“text-embedding-ada-002”模型生成的嵌入可能并不总是能够有效地捕获精确的关键字匹配。因此，插件可能无法返回对特定关键字的查询非常依赖的最相关结果。一些矢量数据库，如Pinecone和Weaviate，使用混合搜索可能表现更好，适用于关键字搜索。
+- **敏感数据处理**：该插件不会自动检测或过滤敏感数据。
+开发人员有责任确保他们有必要的授权来包含检索插件中的内容，并且内容符合数据隐私要求。
+- **可伸缩性**：插件的性能取决于所选择的向量数据库提供商和数据集的大小。有些提供商可能比其他提供商提供更好的可伸缩性和性能。
+- **语言支持**：插件目前使用的是 OpenAI 的 `text-embedding-ada-002 ` 模型，该模型是针对英语进行优化的。然而，它仍然足够强大，能够为各种语言生成出色的结果。
+- **元数据提取**：可选的元数据提取功能依赖于一种语言模型，用于从文本中提取信息。这个过程可能不总是准确的，提取的元数据的质量可能取决于文档内容和结构。
+- **PII 检测**：可选的 PII 检测功能不是百分百可靠的，可能无法捕捉到所有个人可识别信息的实例。请谨慎使用此功能，并验证其对您特定用例的有效性。
 
-## Scripts
 
-The `scripts` folder contains scripts to batch upsert or process text documents from different data sources, such as a zip file, JSON file, or JSONL file. These scripts use the plugin's upsert utility functions to upload the documents and their metadata to the vector database, after converting them to plain text and splitting them into chunks. Each script folder has a README file that explains how to use it and what parameters it requires. You can also optionally screen the documents for personally identifiable information (PII) using a language model and skip them if detected, with the [`services.pii_detection`](/services/pii_detection.py) module. This can be helpful if you want to avoid uploading sensitive or private documents to the vector database unintentionally. Additionally, you can optionally extract metadata from the document text using a language model, with the [`services.extract_metadata`](/services/extract_metadata.py) module. This can be useful if you want to enrich the document metadata. **Note:** if using incoming webhooks to continuously sync data, consider running a backfill after setting these up to avoid missing any data.
 
-The scripts are:
+## 未来发展方向
 
-- [`process_json`](scripts/process_json/): This script processes a file dump of documents in a JSON format and stores them in the vector database with some metadata. The format of the JSON file should be a list of JSON objects, where each object represents a document. The JSON object should have a `text` field and optionally other fields to populate the metadata. You can provide custom metadata as a JSON string and flags to screen for PII and extract metadata.
-- [`process_jsonl`](scripts/process_jsonl/): This script processes a file dump of documents in a JSONL format and stores them in the vector database with some metadata. The format of the JSONL file should be a newline-delimited JSON file, where each line is a valid JSON object representing a document. The JSON object should have a `text` field and optionally other fields to populate the metadata. You can provide custom metadata as a JSON string and flags to screen for PII and extract metadata.
-- [`process_zip`](scripts/process_zip/): This script processes a file dump of documents in a zip file and stores them in the vector database with some metadata. The format of the zip file should be a flat zip file folder of docx, pdf, txt, md, pptx or csv files. You can provide custom metadata as a JSON string and flags to screen for PII and extract metadata.
+ChatGPT检索插件提供了灵活的语义搜索和检索解决方案，但仍有进一步的发展潜力。
+我们鼓励用户通过提交拉取请求来为项目做出贡献以实现新功能或增强性能。
+值得注意的贡献将获得OpenAI积分。
+未来发展方向的一些想法包括： 
 
-## Limitations
+- **更多向量数据库提供商**：如果你有兴趣与ChatGPT检索插件集成另一个向量数据库提供商，请随时提交实现。
+ - **附加脚本**：扩展可用于处理和上传来自各种数据源的文档的脚本范围将使插件更加多才多艺。
+ - **用户界面**：开发用于管理文档和与插件交互的用户界面可以改善用户体验。
+ - **混合搜索/ TF-IDF选项**：增强[datastore的upsert函数](/datastore/datastore.md#upsert)，以允许混合搜索使用语义向量和TF-IDF分数，可以提供更准确的检索结果。
+- **多语言支持**：添加对多种语言的支持将允许插件在更广泛的上下文中使用，并提高工具的包容性。我们期待着看到ChatGPT检索插件将如何继续发展并满足其用户的需求！使用混合搜索或TF-IDF索引选项可能会提高基于关键字的查询插件的性能。
+ - **高级分块策略和嵌入计算**：实现更复杂的分块策略和嵌入计算，如嵌入文档标题和摘要，进行文档块和摘要的加权平均，或计算文档的平均嵌入，可能会导致更好的搜索结果。
+ - **自定义元数据**：允许用户向文档块添加自定义元数据，如标题或其他相关信息，可能会在某些使用情况下提高检索结果。
+ - **附加可选服务**：集成更多可选服务，如文档摘要或在嵌入它们之前对文档进行预处理，可以增强插件的功能和检索结果的质量。这些服务可以使用语言模型直接集成到插件中，而不仅仅在脚本中可用。
 
-While the ChatGPT Retrieval Plugin is designed to provide a flexible solution for semantic search and retrieval, it does have some limitations:
 
-- **Keyword search limitations**: The embeddings generated by the `text-embedding-ada-002` model may not always be effective at capturing exact keyword matches. As a result, the plugin might not return the most relevant results for queries that rely heavily on specific keywords. Some vector databases, like Pinecone and Weaviate, use hybrid search and might perform better for keyword searches.
-- **Sensitive data handling**: The plugin does not automatically detect or filter sensitive data. It is the responsibility of the developers to ensure that they have the necessary authorization to include content in the Retrieval Plugin and that the content complies with data privacy requirements.
-- **Scalability**: The performance of the plugin may vary depending on the chosen vector database provider and the size of the dataset. Some providers may offer better scalability and performance than others.
-- **Language support**: The plugin currently uses OpenAI's `text-embedding-ada-002` model, which is optimized for use in English. However, it is still robust enough to generate good results for a variety of languages.
-- **Metadata extraction**: The optional metadata extraction feature relies on a language model to extract information from the document text. This process may not always be accurate, and the quality of the extracted metadata may vary depending on the document content and structure.
-- **PII detection**: The optional PII detection feature is not foolproof and may not catch all instances of personally identifiable information. Use this feature with caution and verify its effectiveness for your specific use case.
+我们欢迎社区的贡献帮助改进 ChatGPT 检索插件，扩展其功能。
+如果您有想法或功能要贡献，请提交拉取请求到存储库。
 
-## Future Directions
 
-The ChatGPT Retrieval Plugin provides a flexible solution for semantic search and retrieval, but there is always potential for further development. We encourage users to contribute to the project by submitting pull requests for new features or enhancements. Notable contributions may be acknowledged with OpenAI credits.
 
-Some ideas for future directions include:
 
-- **More vector database providers**: If you are interested in integrating another vector database provider with the ChatGPT Retrieval Plugin, feel free to submit an implementation.
-- **Additional scripts**: Expanding the range of scripts available for processing and uploading documents from various data sources would make the plugin even more versatile.
-- **User Interface**: Developing a user interface for managing documents and interacting with the plugin could improve the user experience.
-- **Hybrid search / TF-IDF option**: Enhancing the [datastore's upsert function](/datastore/datastore.py#L18) with an option to use hybrid search or TF-IDF indexing could improve the plugin's performance for keyword-based queries.
-- **Advanced chunking strategies and embeddings calculations**: Implementing more sophisticated chunking strategies and embeddings calculations, such as embedding document titles and summaries, performing weighted averaging of document chunks and summaries, or calculating the average embedding for a document, could lead to better search results.
-- **Custom metadata**: Allowing users to add custom metadata to document chunks, such as titles or other relevant information, might improve the retrieved results in some use cases.
-- **Additional optional services**: Integrating more optional services, such as summarizing documents or pre-processing documents before embedding them, could enhance the plugin's functionality and quality of retrieved results. These services could be implemented using language models and integrated directly into the plugin, rather than just being available in the scripts.
-
-We welcome contributions from the community to help improve the ChatGPT Retrieval Plugin and expand its capabilities. If you have an idea or feature you'd like to contribute, please submit a pull request to the repository.
-
-## Contributors
-
-We would like to extend our gratitude to the following contributors for their code / documentation contributions, and support in integrating various vector database providers with the ChatGPT Retrieval Plugin:
+## 贡献者
+我们要向以下贡献者表达我们的感激，感谢他们的代码/文档贡献以及支持将各种向量数据库提供商与 ChatGPT 检索插件集成:
 
 - [Pinecone](https://www.pinecone.io/)
   - [acatav](https://github.com/acatav)
