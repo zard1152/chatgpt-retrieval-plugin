@@ -1,3 +1,6 @@
+
+**以下内容是对文档的翻译, 如果需要快捷启动, 查看 [quick_start](https://github.com/zard1152/chatgpt-retrieval-plugin/tree/main/quick_start)**
+
 # ChatGPT 检索插件
 > **在此处加入 [ChatGPT 插件等待名单](https://openai.com/waitlist/plugins)!**
 > 在此处找到一个检索插件的示例视频，该插件可以访问 2018 年至 2022 年的联合国年度报告 [视频链接](https://cdn.openai.com/chat-plugins/retrieval-gh-repo-readme/Retrieval-Final.mp4)。
@@ -16,7 +19,6 @@ ChatGPT 检索插件仓库提供了一种灵活的解决方案，用于使用自
 | [`services`](/services)       | 包含用于任务如分块、元数据提取和 PII 检测的实用服务。                                 |
 | [`tests`](/tests)             | 包含针对各种向量数据库提供者的集成测试。                                                          |
 | [`.well-known`](/.well-known) | 存储插件清单文件和 OpenAPI 架构，这些定义了插件配置和 API 规范。           |
-| 
 
 
 这份 README 提供了关于如何设置、开发和部署 ChatGPT 检索插件的详细信息。

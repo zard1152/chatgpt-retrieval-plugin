@@ -60,5 +60,16 @@ poetry run start
 plugins store --> Develop your own plugin --> 添加你的项目根 url, (不要带 .well-known parts) --> 界面中一直点击下一步 --> 填入之前环境变量中的 BEARER TOKEN, 之后就可以开始使用了
 
 
+### 插入 langchain docs 的数据到向量数据库
+**参考[这里](https://github.com/zard1152/examples/blob/master/generation/chatgpt/plugins/langchain-docs-plugin.ipynb)**
+
+### 插入整个 API 项目的数据到向量数据库
+**参考[这里]()**
+
+
+### 一起理解整个源码
+**参考[这里](https://github.com/zard1152/chatgpt-retrieval-plugin/tree/main/quick_start/read_code.md)**
+
+
 ---
 
